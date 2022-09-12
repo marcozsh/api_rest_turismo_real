@@ -98,24 +98,23 @@ class ExtraServicesView(View):
         extra_services = Services.objects.all()
         return JsonResponse(list(extra_services.values()), safe=False)
 
+    
+    
+
+class AddExtraServicesView(View):
     def post(self, request):
         django_cursor = connection.cursor()
         cursor = django_cursor.connection.cursor()
-        name = ""
-        price = 0
-        location = ""
-        avaible = ""
-        #extra_services = cursor.callfunc("FN_ADD_SERVICE",int ,['service_type','name','price','location','avaible'])
-
-
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        print(post_data)
+        extra_services = cursor.callfunc("FN_ADD_SERVICE",int,[post_data['service_type_id'],post_data['name'],post_data['price'],post_data['location'],post_data['available']])
+        connection.commit()
         extra_services_response = {
-            "name":name,
-            "price":price,
-            "location":location,
-            "available":avaible
+            "response":extra_services
         } 
         return JsonResponse(extra_services_response, safe=False)
-    
+
 
 class EmployeeDetailView(View):
     def get(self, request, pk):
