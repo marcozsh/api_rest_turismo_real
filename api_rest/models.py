@@ -138,27 +138,24 @@ class DepartmentType(models.Model):
         db_table = 'department_type'
         ordering = ['id']
 
-class DepartmentMaintenance(models.Model):
-    maintenance_date = models.DateField(null=False)
-    last_maintenance = models.DateField(null=False)
-    description = models.CharField(max_length=100, null=False)
-    class Meta:
-        db_table = 'department_maintenance'
-        ordering = ['id']
-
 class Department(models.Model):
     commune_id = models.ForeignKey(Commune, on_delete=models.CASCADE, related_name='department_commune_id_fk', default=None)
-    department_maintenance_id = models.ForeignKey(DepartmentMaintenance, on_delete=models.CASCADE, related_name='department_maintenance_id_fk', default=None)
     department_type_id = models.ForeignKey(DepartmentType, on_delete=models.CASCADE, related_name='department_type_id_fk', default=None)
-    internet = models.BooleanField(default=False)
-    tv_cable = models.BooleanField(default=False)
-    heating = models.BooleanField(default=False)
     address = models.CharField(max_length=100, null=False)
     status = models.BooleanField(default=False)
     qty_rooms = models.IntegerField(default=0, null=False)
     price = models.IntegerField(default=0, null=False)
     class Meta:
         db_table = 'department'
+        ordering = ['id']
+
+class DepartmentMaintenance(models.Model):
+    maintenance_date = models.DateField(null=False)
+    department_id = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_maintance_id_fk', default=None)
+    last_maintenance = models.DateField(null=False)
+    description = models.CharField(max_length=100, null=False)
+    class Meta:
+        db_table = 'department_maintenance'
         ordering = ['id']
 
 class DepartmentInventory(models.Model):
