@@ -71,6 +71,11 @@ class EmployeeView(View):
             }
         return JsonResponse(result_data, safe=False)
 
+class EmployeeDetailView(View):
+    def get(self, request, pk):
+        employee = Employee.objects.get(pk=pk)
+        return JsonResponse(model_to_dict(employee))
+
 class EmployeeLogoutView(View):
     def post(self, request):
         django_cursor = connection.cursor()
@@ -90,16 +95,10 @@ class EmployeeLogoutView(View):
         }
         return JsonResponse(result_data, safe=False)
 
-
-
 class ExtraServicesView(View):
-
     def get(self, request):
         extra_services = Services.objects.all()
         return JsonResponse(list(extra_services.values()), safe=False)
-
-    
-    
 
 class AddExtraServicesView(View):
     def post(self, request):
@@ -107,7 +106,6 @@ class AddExtraServicesView(View):
         cursor = django_cursor.connection.cursor()
         json_decode = request.body.decode('utf-8')
         post_data = json.loads(json_decode)
-        print(post_data)
         extra_services = cursor.callfunc("FN_ADD_SERVICE",int,[post_data['service_type_id'],post_data['name'],post_data['price'],post_data['location'],post_data['available']])
         connection.commit()
         extra_services_response = {
@@ -116,7 +114,3 @@ class AddExtraServicesView(View):
         return JsonResponse(extra_services_response, safe=False)
 
 
-class EmployeeDetailView(View):
-    def get(self, request, pk):
-        employee = Employee.objects.get(pk=pk)
-        return JsonResponse(model_to_dict(employee))
