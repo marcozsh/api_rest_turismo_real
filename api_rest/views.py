@@ -113,4 +113,25 @@ class AddExtraServicesView(View):
         } 
         return JsonResponse(extra_services_response, safe=False)
 
+class DepartmentView(View):
+    def get(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        cursor.callproc('GET_DEPARTMENT',[out_cursor])
 
+        department = []
+        for i in out_cursor:
+            department_json= {
+                "address":i[0],
+                "status":i[1],
+                "qty_room":i[2],
+                "price":i[3],
+                "commune":i[4],
+                "department_type":i[5],
+                "short_description":i[6],
+                "long_description":i[7]
+            } 
+            department.append(department_json)
+
+        return JsonResponse(list(department), safe=False)

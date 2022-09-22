@@ -143,6 +143,8 @@ class Department(models.Model):
     department_type_id = models.ForeignKey(DepartmentType, on_delete=models.CASCADE, related_name='department_type_id_fk', default=None)
     address = models.CharField(max_length=100, null=False)
     status = models.BooleanField(default=False)
+    short_description = models.CharField(max_length=100, null=False, default='')
+    long_description = models.CharField(max_length=200, null=True)
     qty_rooms = models.IntegerField(default=0, null=False)
     price = models.IntegerField(default=0, null=False)
     class Meta:
