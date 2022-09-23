@@ -133,5 +133,17 @@ class DepartmentView(View):
                 "long_description":i[7]
             } 
             department.append(department_json)
-
         return JsonResponse(list(department), safe=False)
+
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        department = cursor.callfunc("FN_ADD_DEPARTMENT",int,[post_data['address'],post_data['status'],post_data['qty_rooms'],post_data['price'],post_data['commune_id'], post_data['department_type'], post_data['shot_description'], post_data['long_description']])
+        connection.commit()
+        department_response = {
+            "response":department
+        } 
+        return JsonResponse(department_response, safe=False) 
+
