@@ -1,1 +1,10 @@
 .env
+<<<<<<< HEAD
+=======
+
+__pycache__/
+
+*.py[cod]
+
+venv_tr/
+>>>>>>> 6662fe335e600f636b4a1e007aceb47e5772e73b

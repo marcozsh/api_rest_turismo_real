@@ -18,5 +18,10 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+<<<<<<< HEAD
     path('api_mobile/', include('api_rest.urls'))
+=======
+    path('api_mobile/', include('api_rest.urls')),
+    path('api_web/',include('api_rest_web.urls')) 
+>>>>>>> 6662fe335e600f636b4a1e007aceb47e5772e73b
 ]

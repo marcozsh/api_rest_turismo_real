@@ -147,3 +147,4 @@ class DepartmentView(View):
         } 
         return JsonResponse(department_response, safe=False) 
 
+    
