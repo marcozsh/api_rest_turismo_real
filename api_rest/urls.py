@@ -8,5 +8,7 @@ urlpatterns = [
     path('employee_login/', EmployeeLoginView.as_view()),
     path('extra_services/', ExtraServicesView.as_view()),
     path('extra_services/add/', AddExtraServicesView.as_view()),
-    path('department/', DepartmentView.as_view())
+    path('department/', DepartmentView.as_view()),
+    path('department/add/', AddDepartment.as_view()),
+    path('all_communes/', CommuneView.as_view())
 ]
