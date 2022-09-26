@@ -1,6 +1,5 @@
 import base64
 import json
-from turtle import pos
 from django.views import View
 from .models import *
 from django.http import JsonResponse
@@ -54,7 +53,7 @@ class EmployeeView(View):
         error = "NO ERROR"
         if post_data['user_id'] > 0:
             try:
-                query = "SELECT es.user_id_id ,INITCAP(e.name) || ' ' || INITCAP(e.last_name) as \"full_name\" ,et.position ,es.session_id FROM employee_session es JOIN employee e ON es.user_id_id = e.id JOIN employee_type et ON e.employee_type_id_id = et.id WHERE es.user_id_id = {}".format(post_data['user_id'])
+                query = "SELECT es.user_id ,INITCAP(e.name) || ' ' || INITCAP(e.last_name) as \"full_name\" ,et.position ,es.session_id FROM employee_session es JOIN employee e ON es.user_id = e.id JOIN employee_type et ON e.employee_type_id = et.id WHERE es.user_id = {}".format(post_data['user_id'])
                 result = cursor.execute(query)
                 for i in result:
                     user_id = i[0]
@@ -84,9 +83,10 @@ class EmployeeLogoutView(View):
         cursor = django_cursor.connection.cursor()
         json_decode = request.body.decode('utf-8')
         post_data = json.loads(json_decode)
+        print(post_data)
         error = "NO ERROR"
         try:
-            query = "update employee_session set session_id = 'NO SESSION' where user_id_id = {}".format(post_data['user_id'])
+            query = "update employee_session set session_id = 'NO SESSION' where user_id = {}".format(post_data['user_id'])
             result = cursor.execute(query)
             connection.commit()
         except:
@@ -121,10 +121,8 @@ class DepartmentView(View):
         cursor = django_cursor.connection.cursor()
         out_cursor = django_cursor.connection.cursor()
         cursor.callproc('GET_DEPARTMENT',[out_cursor])
-
         department = []
         for i in out_cursor:
-            
             department_json= {
                 "address":i[0],
                 "status":i[1],

@@ -1,11 +1,3 @@
-from ast import PyCF_ALLOW_TOP_LEVEL_AWAIT
-from distutils.command.check import check
-from distutils.command.upload import upload
-from operator import mod
-from pyexpat import model
-from re import I
-from tkinter import CASCADE
-from unittest.util import _MAX_LENGTH
 from django.db import models
 
 
