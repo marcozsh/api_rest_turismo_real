@@ -1,4 +1,6 @@
+import base64
 import json
+from turtle import pos
 from django.views import View
 from .models import *
 from django.http import JsonResponse
@@ -122,6 +124,7 @@ class DepartmentView(View):
 
         department = []
         for i in out_cursor:
+            
             department_json= {
                 "address":i[0],
                 "status":i[1],
@@ -130,7 +133,8 @@ class DepartmentView(View):
                 "commune":i[4],
                 "department_type":i[5],
                 "short_description":i[6],
-                "long_description":i[7]
+                "long_description":i[7],
+                "department_image":i[8] if i[8] == None else str(base64.b64encode(i[8].read()), 'utf-8')
             } 
             department.append(department_json)
         return JsonResponse(department, safe=False)
@@ -141,11 +145,13 @@ class AddDepartment(View):
         cursor = django_cursor.connection.cursor()
         json_decode = request.body.decode('utf-8')
         post_data = json.loads(json_decode)
-        department = cursor.callfunc("FN_ADD_DEPARTMENT",int,[post_data['address'],post_data['status'],post_data['qty_rooms'],post_data['price'],post_data['commune'], post_data['department_type'], post_data['short_description'], post_data['long_description']])
+        image = base64.b64decode(post_data['department_image'])
+        department = cursor.callfunc("FN_ADD_DEPARTMENT",int,[post_data['address'],post_data['status'],post_data['qty_rooms'],post_data['price'],post_data['commune'], post_data['department_type'], post_data['short_description'], post_data['long_description'], image])
         connection.commit()
         department_response = {
             "response":department
         } 
+        print(post_data['department_type'])
         return JsonResponse(department_response, safe=False) 
 
 class CommuneView(View):
