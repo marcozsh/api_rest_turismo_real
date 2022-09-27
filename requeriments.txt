@@ -1,5 +1,16 @@
 django
 cx_oracle
 python-dotenv
-
+django-crispy-forms
+asgiref
+autopep8
+django-cors-headers
+djangorestframework
+djangorestframework-simplejwt
+pycodestyle
+PyJWT
+pytz
+sqlparse
+toml
+tzdata
 

@@ -1,4 +1,6 @@
+from email.policy import default
 from django.db import models
+from django.conf import settings
 
 
 
@@ -45,7 +47,6 @@ class Employee(models.Model):
     name = models.CharField(max_length=100, null=False)
     last_name = models.CharField(max_length=100, null=False)
     mail_address = models.EmailField(max_length=100, null=False)
-    profile_photo = models.BinaryField(blank=True, null=True)
     class Meta:
         db_table = 'employee'
         ordering = ['id']
@@ -93,7 +94,6 @@ class Product(models.Model):
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='product_type_fk', default=None)
     name = models.CharField(max_length=100, null=False)
     description = models.CharField(max_length=100, null=False)
-    product_image = models.BinaryField(blank=True, null=True)
     class Meta:
         db_table = 'product'
         ordering = ['id']
@@ -135,7 +135,6 @@ class Department(models.Model):
     commune = models.ForeignKey(Commune, on_delete=models.CASCADE, related_name='department_commune_id_fk', default=None)
     department_type = models.ForeignKey(DepartmentType, on_delete=models.CASCADE, related_name='department_type_id_fk', default=None)
     address = models.CharField(max_length=100, null=False)
-    status = models.BooleanField(default=False)
     short_description = models.CharField(max_length=100, null=False, default='')
     long_description = models.CharField(max_length=200, null=True)
     qty_rooms = models.IntegerField(default=0, null=False)
@@ -145,14 +144,20 @@ class Department(models.Model):
         db_table = 'department'
         ordering = ['id']
 
-class DepartmentMaintenance(models.Model):
-    maintenance_date = models.DateField(null=False)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_maintance_id_fk', default=None)
-    last_maintenance = models.DateField(null=False)
-    description = models.CharField(max_length=100, null=False)
-    class Meta:
-        db_table = 'department_maintenance'
-        ordering = ['id']
+class DepartmentDisponibility(models.Model):
+    STATUS_CATEGORIES = ( 
+    ('reservado','Reservado'), 
+    ('disponible','Disponible'), 
+    ('nuevo','Nuevo') ,
+    ('mantenimiento','Departamento en mantención')
+    ) 
+    status = models.CharField(max_length=200, choices=STATUS_CATEGORIES, null=False)
+    maintance_init = models.DateField(default=None)
+    maintance_finish = models.DateField(default=None)
+    start_reservation = models.DateField(default=None)
+    finish_resercation = models.DateField(default=None)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_disponibility_fk', default=None) 
+
 
 class DepartmentInventory(models.Model):
     department = models.ForeignKey (Department, on_delete=models.CASCADE, related_name='department_id_fk', default=None)
@@ -180,11 +185,6 @@ class Services(models.Model):
         db_table = 'service'
         ordering = ['id']
 
-class ReservationStatus(models.Model):
-    status = models.BooleanField(default=False)
-    class Meta:
-        db_table = 'reservation_status'
-        ordering = ['id']
 
 class Finance(models.Model):
     user = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='finance_user_id_fk', default=None)
@@ -204,19 +204,32 @@ class Tour(models.Model):
         db_table = 'tour'
         ordering = ['id']
 
-class Reservation(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='r_id_customer_fk', default=None)
-    service = models.ForeignKey(Services, on_delete=models.CASCADE, related_name='r_id_service_fk', default=None)
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='r_id_payment_fk', default=None)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='r_id_employee_fk', default=None)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='r_id_vehicle_fk', default=None)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='r_id_department_fk', default=None)
-    reservation_status = models.ForeignKey(ReservationStatus, on_delete=models.CASCADE, related_name='r_id_reservation_status_fk', default=None)
-    qty_customer = models.IntegerField(default=1, null=False)
-    reservation_date = models.DateField(null=False)
-    check_in = models.DateField(null=False)
-    check_out = models.DateField(null=False)
-    class Meta:
-        db_table = 'reservation'
-        ordering = ['id']
+class Reservation(models.Model): 
+    STATUS_CATEGORIES = ( 
+    ('reservado','Reservado (10% pagado)'), 
+    ('pagado','Pagado (100%)'), 
+    ('cancelado','Cancelado') 
+    ) 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING) 
+    services = models.ForeignKey(Services, models.DO_NOTHING) 
+    department = models.ForeignKey(Department, models.DO_NOTHING,default=None) 
+    status = models.CharField(max_length=50,choices=STATUS_CATEGORIES,default='reservado') 
+    total_amount = models.IntegerField(null=True) # sumatoria de costo depto + servicios extra 
+    reservation_amount = models.IntegerField(null=True) # $ a pagar al reservar (10% del total amount) 
+    difference_amount = models.IntegerField(null=True) # monto a pagar al momento de check in (90% del total amount) 
+    qty_customers = models.IntegerField(blank=True, null=True) 
+    reservation_date = models.DateTimeField() 
+    check_in = models.DateField() 
+    check_out = models.DateField() 
+
+
+class Meta: 
+    db_table = 'reservation' 
+    ordering = ['id'] 
+
+ 
+ 
+
+def __str__(self):
+     return f'Cliente: {self.user} | Depto:{self.department} | {self.check_in} - {self.check_out}' 
 
