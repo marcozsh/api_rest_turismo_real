@@ -125,17 +125,39 @@ class DepartmentView(View):
         for i in out_cursor:
             department_json= {
                 "address":i[0],
-                "status":i[1],
-                "qty_room":i[2],
-                "price":i[3],
-                "commune":i[4],
-                "department_type":i[5],
-                "short_description":i[6],
-                "long_description":i[7],
-                "department_image":i[8] if i[8] == None else str(base64.b64encode(i[8].read()), 'utf-8')
+                "qty_room":i[1],
+                "price":i[2],
+                "commune":i[3],
+                "department_type":i[4],
+                "short_description":i[5],
+                "long_description":i[6],
+                "department_image":i[7] if i[7] == None else str(base64.b64encode(i[7].read()), 'utf-8')
             } 
             department.append(department_json)
         return JsonResponse(department, safe=False)
+    
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        cursor.callproc('GET_DEPARTMENT_BY_COMMUNE',[out_cursor,post_data['commune']])
+        department = []
+        for i in out_cursor:
+            department_json= {
+                "address":i[0],
+                "qty_room":i[1],
+                "price":i[2],
+                "commune":i[3],
+                "department_type":i[4],
+                "short_description":i[5],
+                "long_description":i[6],
+                "department_image":i[7] if i[7] == None else str(base64.b64encode(i[7].read()), 'utf-8')
+            } 
+            department.append(department_json)
+        return JsonResponse(department, safe=False)
+        
 
 class AddDepartment(View):
     def post(self, request):
@@ -144,12 +166,11 @@ class AddDepartment(View):
         json_decode = request.body.decode('utf-8')
         post_data = json.loads(json_decode)
         image = base64.b64decode(post_data['department_image'])
-        department = cursor.callfunc("FN_ADD_DEPARTMENT",int,[post_data['address'],post_data['status'],post_data['qty_rooms'],post_data['price'],post_data['commune'], post_data['department_type'], post_data['short_description'], post_data['long_description'], image])
+        department = cursor.callfunc("FN_ADD_DEPARTMENT",int,[post_data['address'],post_data['qty_rooms'],post_data['price'],post_data['commune'], post_data['department_type'], post_data['short_description'], post_data['long_description'], image])
         connection.commit()
         department_response = {
             "response":department
-        } 
-        print(post_data['department_type'])
+        }
         return JsonResponse(department_response, safe=False) 
 
 class CommuneView(View):

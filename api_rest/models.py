@@ -157,6 +157,9 @@ class DepartmentDisponibility(models.Model):
     start_reservation = models.DateField(default=None)
     finish_resercation = models.DateField(default=None)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_disponibility_fk', default=None) 
+    class Meta:
+        db_table = 'department_disponibility'
+        ordering = ['id']
 
 
 class DepartmentInventory(models.Model):
@@ -210,8 +213,8 @@ class Reservation(models.Model):
     ('pagado','Pagado (100%)'), 
     ('cancelado','Cancelado') 
     ) 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING) 
-    services = models.ForeignKey(Services, models.DO_NOTHING) 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING, default=None) 
+    services = models.ForeignKey(Services, models.DO_NOTHING, default=None) 
     department = models.ForeignKey(Department, models.DO_NOTHING,default=None) 
     status = models.CharField(max_length=50,choices=STATUS_CATEGORIES,default='reservado') 
     total_amount = models.IntegerField(null=True) # sumatoria de costo depto + servicios extra 
@@ -221,11 +224,9 @@ class Reservation(models.Model):
     reservation_date = models.DateTimeField() 
     check_in = models.DateField() 
     check_out = models.DateField() 
-
-
-class Meta: 
-    db_table = 'reservation' 
-    ordering = ['id'] 
+    class Meta: 
+        db_table = 'reservation' 
+        ordering = ['id'] 
 
  
  
