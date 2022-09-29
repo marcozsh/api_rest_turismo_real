@@ -98,33 +98,6 @@ class Product(models.Model):
         db_table = 'product'
         ordering = ['id']
 
-class Customer(models.Model):
-    rut = models.CharField(max_length=100, null=False)
-    name = models.CharField(max_length=100, null=False)
-    last_name = models.CharField(max_length=100, null=False)
-    description = models.CharField(max_length=100, null=False)
-    class Meta:
-        db_table = 'customer'
-        ordering = ['id']
-
-
-class CustomerAccount(models.Model):
-    user = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='customer_user_id_fk', default=None)
-    username = models.CharField(max_length=100, null=False)
-    password = models.CharField(max_length=100, null=False)
-    regular_customer = models.BooleanField(default=False)
-    class Meta:
-        db_table = 'customer_account'
-        ordering = ['id']
-
-class Vehicle(models.Model):
-    color = models.CharField(max_length=100, null=False)
-    id_vehicle = models.CharField(max_length=100, null=False)
-    brand = models.CharField(max_length=100, null=False)
-    class Meta:
-        db_table = 'vehicle'
-        ordering = ['id']
-
 class DepartmentType(models.Model):
     description = models.CharField(max_length=100, null=False)
     class Meta:
@@ -199,13 +172,7 @@ class Finance(models.Model):
         db_table = 'finance'
         ordering = ['id']
 
-class Tour(models.Model):
-    destination = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
-    hire_date = models.DateField(null=False)
-    class Meta:
-        db_table = 'tour'
-        ordering = ['id']
+
 
 class Reservation(models.Model): 
     STATUS_CATEGORIES = ( 
@@ -213,9 +180,9 @@ class Reservation(models.Model):
     ('pagado','Pagado (100%)'), 
     ('cancelado','Cancelado') 
     ) 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING, default=None) 
-    services = models.ForeignKey(Services, models.DO_NOTHING, default=None) 
-    department = models.ForeignKey(Department, models.DO_NOTHING,default=None) 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=None) 
+    services = models.CharField(max_length=200) 
+    department = models.ForeignKey(Department, on_delete=models.CASCADE,default=None) 
     status = models.CharField(max_length=50,choices=STATUS_CATEGORIES,default='reservado') 
     total_amount = models.IntegerField(null=True) # sumatoria de costo depto + servicios extra 
     reservation_amount = models.IntegerField(null=True) # $ a pagar al reservar (10% del total amount) 
@@ -228,8 +195,6 @@ class Reservation(models.Model):
         db_table = 'reservation' 
         ordering = ['id'] 
 
- 
- 
 
 def __str__(self):
      return f'Cliente: {self.user} | Depto:{self.department} | {self.check_in} - {self.check_out}' 
