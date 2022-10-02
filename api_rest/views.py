@@ -1,11 +1,12 @@
 import base64
 import json
+from pdb import post_mortem
 from django.views import View
 from .models import *
 from django.http import JsonResponse
 from django.forms import model_to_dict
 from  django.db import connection
-
+import cx_Oracle
 
 class EmployeeLoginView(View):
     def post(self,request):
@@ -124,14 +125,16 @@ class DepartmentView(View):
         department = []
         for i in out_cursor:
             department_json= {
-                "address":i[0],
-                "qty_room":i[1],
-                "price":i[2],
-                "commune":i[3],
-                "department_type":i[4],
-                "short_description":i[5],
-                "long_description":i[6],
-                "department_image":i[7] if i[7] == None else str(base64.b64encode(i[7].read()), 'utf-8')
+                "id":i[0],
+                "address":i[1],
+                "is_new":i[2],
+                "qty_room":i[3],
+                "price":i[4],
+                "commune":i[5],
+                "department_type":i[6],
+                "short_description":i[7],
+                "long_description":i[8],
+                "department_image":i[9] if i[9] == None else str(base64.b64encode(i[9].read()), 'utf-8')
             } 
             department.append(department_json)
         return JsonResponse(department, safe=False)
@@ -146,18 +149,44 @@ class DepartmentView(View):
         department = []
         for i in out_cursor:
             department_json= {
-                "address":i[0],
-                "qty_room":i[1],
-                "price":i[2],
-                "commune":i[3],
-                "department_type":i[4],
-                "short_description":i[5],
-                "long_description":i[6],
-                "department_image":i[7] if i[7] == None else str(base64.b64encode(i[7].read()), 'utf-8')
+                "id":i[0],
+                "address":i[1],
+                "is_new":i[2],
+                "qty_room":i[3],
+                "price":i[4],
+                "commune":i[5],
+                "department_type":i[6],
+                "short_description":i[7],
+                "long_description":i[8],
+                "department_image":i[9] if i[9] == None else str(base64.b64encode(i[9].read()), 'utf-8')
             } 
             department.append(department_json)
         return JsonResponse(department, safe=False)
         
+
+class DepartmentViewById(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_cursor = django_cursor.connection.cursor()
+        cursor.callproc('GET_DEPTO_BY_ID',[out_cursor, post_data['id']])
+        department_result = []
+        for i in out_cursor:
+            json_department = {
+                "id":i[0],
+                "address":i[1],
+                "qty_room":i[4],
+                "price":i[5],
+                "commune":i[8],
+                "department_type":i[9],
+                "short_description":i[2],
+                "long_description":i[3],
+                "department_image":i[6] if i[6] == None else str(base64.b64encode(i[6].read()), 'utf-8')
+            }
+            department_result.append(json_department)
+        return JsonResponse(department_result, safe=False)
 
 class AddDepartment(View):
     def post(self, request):
@@ -188,5 +217,75 @@ class CommuneView(View):
             }
             commune.append(commune_json)
         return JsonResponse(commune, safe=False)
+
+class ProductView(View):
+
+    def get(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        cursor.callproc('GET_ALL_PRODUCT',[out_cursor])
+        json_product = []
+        for i in out_cursor:
+            product = {
+                "id":i[0],
+                "name":i[1],
+                "brand":i[2],
+                "product_type":i[3]
+            }
+            json_product.append(product)
+
+        return JsonResponse(json_product,safe=False)
+
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_number = cursor.var(cx_Oracle.NUMBER)
+        cursor.callproc('ADD_PRODUCT',[post_data['name'], post_data['brand'], post_data['product_type'], out_number])
+        connection.commit()
+        id_product = out_number.getvalue()
+        return JsonResponse({
+            "response":"ok",
+            "id_product":id_product
+        })
+
+
+class DepartmentInventoryView(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_cursor = django_cursor.connection.cursor()
+        cursor.callproc('GET_DEPARTMENT_INVENTORY',[out_cursor,post_data['department_id']])
+        json_inventory = []
+        for i in out_cursor:
+            inventory = {
+                "id":i[0],
+                "name":i[1],
+                "brand":i[2],
+                "product_type":i[3]
+            }
+            json_inventory.append(inventory)
+
+        return JsonResponse(json_inventory,safe=False) 
+
+
+class AddDepartmentInventoryView(View):
+    def post(self,request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_number = cursor.var(cx_Oracle.NUMBER)
+        cursor.callproc('ADD_DEPARTMENT_INVENTORY',[post_data['qty'], post_data['department_id'],post_data['product_id'],out_number])
+        connection.commit()
+        department_inventory_id = out_number.getvalue()
+        return JsonResponse({
+            "response":"ok",
+            "department_inventory_id":department_inventory_id
+        })
 
 
