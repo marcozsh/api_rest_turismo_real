@@ -1,11 +1,11 @@
 import base64
 import json
-from pdb import post_mortem
 from django.views import View
 from .models import *
 from django.http import JsonResponse
 from django.forms import model_to_dict
 from  django.db import connection
+import datetime
 import cx_Oracle
 
 class EmployeeLoginView(View):
@@ -264,9 +264,11 @@ class DepartmentInventoryView(View):
         for i in out_cursor:
             inventory = {
                 "id":i[0],
-                "name":i[1],
-                "brand":i[2],
-                "product_type":i[3]
+                "date_time":i[1].strftime("%d/%m/%Y"),
+                "qty":i[2],
+                "name":i[3],
+                "brand":i[4],
+                "product_type":i[5]
             }
             json_inventory.append(inventory)
 
