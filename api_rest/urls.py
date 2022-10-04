@@ -14,7 +14,9 @@ urlpatterns = [
     path('all_communes/', CommuneView.as_view()),
     path('product/', ProductView.as_view()),
     path('department_inventory/', DepartmentInventoryView.as_view()),
-    path('department_inventory/add/', AddDepartmentInventoryView.as_view())
+    path('department_inventory/add/', AddDepartmentInventoryView.as_view()),
+    path('not_available_dates/', getNotaVailableDates.as_view())
+    
 
 
 ]

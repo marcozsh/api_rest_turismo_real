@@ -163,7 +163,6 @@ class DepartmentView(View):
             department.append(department_json)
         return JsonResponse(department, safe=False)
         
-
 class DepartmentViewById(View):
     def post(self, request):
         django_cursor = connection.cursor()
@@ -183,7 +182,8 @@ class DepartmentViewById(View):
                 "department_type":i[9],
                 "short_description":i[2],
                 "long_description":i[3],
-                "department_image":i[6] if i[6] == None else str(base64.b64encode(i[6].read()), 'utf-8')
+                "department_image":i[6] if i[6] == None else str(base64.b64encode(i[6].read()), 'utf-8'),
+                "is_new":i[10]
             }
             department_result.append(json_department)
         return JsonResponse(department_result, safe=False)
@@ -251,7 +251,6 @@ class ProductView(View):
             "id_product":id_product
         })
 
-
 class DepartmentInventoryView(View):
     def post(self, request):
         django_cursor = connection.cursor()
@@ -274,7 +273,6 @@ class DepartmentInventoryView(View):
 
         return JsonResponse(json_inventory,safe=False) 
 
-
 class AddDepartmentInventoryView(View):
     def post(self,request):
         django_cursor = connection.cursor()
@@ -290,4 +288,51 @@ class AddDepartmentInventoryView(View):
             "department_inventory_id":department_inventory_id
         })
 
+class getNotaVailableDates(View):
+     def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode) 
 
+        out_cursor = django_cursor.connection.cursor()
+        out_cursor2 = django_cursor.connection.cursor()
+        cursor.callproc('GET_RESERVATION',[out_cursor, post_data['id']])
+        reservation = {}        
+        for i in out_cursor:
+            if i == None:
+                continue
+            reservation.update({i[0].date(): i[1].date()})
+        cursor.callproc('GET_DEPARTMENT_DISPONIBILITY',[out_cursor2, id])
+        disponibility = {}
+        for i in out_cursor2:
+            if i == None:
+                continue
+            disponibility.update({i[0].date(): i[1].date()})
+        fechasNoDisponibles = []
+        reservation_items = reservation.items()
+        for key, value in reservation_items:
+            dia = key
+            #solo añade las fechas desde hoy
+            if dia >= date.today():
+                fechasNoDisponibles.append(dia)
+            #voy añadiendo los días desde el checkin uno por uno hasta el checkout, y luego continúa con la siguiente reserva si existe
+            while dia < value:
+                dia = dia + datetime.timedelta(days=1)
+                if dia >= date.today():
+                    fechasNoDisponibles.append(dia)
+        disponibility_items = disponibility.items()
+        for key, value in disponibility_items:
+            dia = key
+            if dia >= date.today():
+                fechasNoDisponibles.append(dia)
+            while dia < value:
+                dia = dia + datetime.timedelta(days=1)
+                if dia >= date.today():
+                    fechasNoDisponibles.append(dia)
+        fechasNoDisponibles.sort()
+        #print (fechasNoDisponibles)
+        return JsonResponse({
+            'message': 'success',
+            'fechasNoDisponibles': fechasNoDisponibles
+        })

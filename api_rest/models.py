@@ -149,7 +149,6 @@ class Finance(models.Model):
         ordering = ['id']
 
 
-
 class Reservation(models.Model): 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=None) 
     department = models.ForeignKey(Department, on_delete=models.CASCADE, default=None)
@@ -164,7 +163,6 @@ class Reservation(models.Model):
         ordering = ['id'] 
     def __str__(self):
         return f'Cliente: {self.user} | Depto:{self.department} | {self.check_in} - {self.check_out}' 
-
 
 class ReservationDetails(models.Model):
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, default=None)
