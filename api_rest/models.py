@@ -157,7 +157,7 @@ class Reservation(models.Model):
     qty_customers = models.IntegerField(blank=True, null=True)
     check_in = models.DateField() 
     check_out = models.DateField()
-    status = models.BooleanField(default=True)
+    status = models.IntegerField(default=0)
     class Meta:
         db_table = 'reservation' 
         ordering = ['id'] 
@@ -171,5 +171,15 @@ class ReservationDetails(models.Model):
     class Meta:
         db_table = 'reservation_details'
         ordering = ['id']
+
+class Transaction(models.Model):
+    reservation_id = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name='reservation_id_fk', default=None)
+    amount = models.IntegerField(default=0, null=False)
+    status = models.CharField(max_length=2, null= False)
+    transaction_date = models.DateField(null=False)
+    class Meta:
+        db_table = 'transaction'
+        ordering = ['id']
+
 
 

@@ -11,12 +11,14 @@ urlpatterns = [
     path('department/', DepartmentView.as_view()),
     path('department/add/', AddDepartment.as_view()),
     path('department/id/',DepartmentViewById.as_view()),
-    path('all_communes/', CommuneView.as_view()),
-    path('product/', ProductView.as_view()),
+    path('department/available/', MarkDepartmentAsAvailable.as_view()),
+    path('department/add/maintenance/', AddDepartmentMaintenance.as_view()),
     path('department_inventory/', DepartmentInventoryView.as_view()),
     path('department_inventory/add/', AddDepartmentInventoryView.as_view()),
-    path('not_available_dates/', getNotaVailableDates.as_view())
-    
-
-
+    path('all_communes/', CommuneView.as_view()),
+    path('product/', ProductView.as_view()),
+    path('product_type/', ProductTypeView.as_view()),
+    path('product_by_category/', ProductViewByCategory.as_view()),
+    path('not_available_dates/', getNotaVailableDates.as_view()),
+    path('reservation/id/', ReservationByIdView.as_view()),
 ]
