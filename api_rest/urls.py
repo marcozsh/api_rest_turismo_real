@@ -21,4 +21,6 @@ urlpatterns = [
     path('product_by_category/', ProductViewByCategory.as_view()),
     path('not_available_dates/', getNotaVailableDates.as_view()),
     path('reservation/id/', ReservationByIdView.as_view()),
+    path('reservation/status/', ReservationStatusView.as_view()),
+    path('reservation/', ReservationView.as_view()),
 ]

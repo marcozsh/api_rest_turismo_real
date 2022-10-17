@@ -314,7 +314,7 @@ class AddDepartmentInventoryView(View):
         json_decode = request.body.decode('utf-8')
         post_data = json.loads(json_decode)
         out_number = cursor.var(cx_Oracle.NUMBER)
-        cursor.callproc('ADD_DEPARTMENT_INVENTORY',[post_data['qty'], post_data['department_id'],post_data['product_id'],out_number])
+        cursor.callproc('ADD_DEPARTMENT_INVENTORY',[post_data['qty'], post_data['department_id'], post_data['product_id'], out_number])
         connection.commit()
         department_inventory_id = out_number.getvalue()
         return JsonResponse({
@@ -384,7 +384,6 @@ class AddDepartmentMaintenance(View):
             "response":department_maintenance
         })
 
-
 class MarkDepartmentAsAvailable(View):
     def post(self,request):
         django_cursor = connection.cursor()
@@ -397,7 +396,6 @@ class MarkDepartmentAsAvailable(View):
         return JsonResponse({
             "response":return_value
         })
-
 
 class ReservationByIdView(View):
     def post(self, request):
@@ -470,5 +468,39 @@ class ReservationByIdView(View):
 
         return JsonResponse(reservation, safe=False)
 
-#El código qr genere una consulta a la api con el id de la reservasión
+class ReservationStatusView(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor() 
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_number = cursor.var(cx_Oracle.NUMBER) 
+        cursor.callproc('MARK_RESERVATION',[post_data['reservation_id'], post_data['action'], out_number])
+        return_value = out_number.getvalue()
+        return JsonResponse({
+            "response":return_value
+        }) 
 
+class ReservationView(View):
+    def get(self,request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        cursor.callproc('GET_ALL_RESERVATIONS',[out_cursor])
+        reservation = []
+        for i in out_cursor:
+            reservation_json ={
+                "id":i[0],
+                "total_amount":i[1],
+                "reservation_amount":i[2],
+                "qty_customers":i[3],
+                "check_in":i[4],
+                "check_out":i[5],
+                "status":i[6],
+                "first_name":i[7],
+                "last_name":i[8],
+                "email":i[9],
+                "department_id":i[10]
+            }
+            reservation.append(reservation_json)
+        return JsonResponse(reservation, safe=False)
