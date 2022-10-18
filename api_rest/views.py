@@ -415,7 +415,6 @@ class ReservationByIdView(View):
         cursor.callproc('GET_RESERVATION_EXTRA_SERVICE',[out_cursor, post_data['reservation_id']])
         for x in out_cursor:
             service_extra.append(x[0])
-        
         for j in service_extra:
             cursor2 = django_cursor.connection.cursor()
             out_cursor2 = django_cursor.connection.cursor()
@@ -435,7 +434,7 @@ class ReservationByIdView(View):
 
         cursor3.callproc('GET_RESERVATION_BY_ID',[out_cursor3, post_data['reservation_id']])
         for i in out_cursor3:
-            cursor4.callproc('GET_DEPTO_BY_ID',[out_cursor4, i[10]])
+            cursor4.callproc('GET_DEPTO_BY_ID',[out_cursor4, i[11]])
             for z in out_cursor4:
                 json_department = {
                     "id":z[0],
@@ -455,14 +454,15 @@ class ReservationByIdView(View):
                 "total_amount":i[1],
                 "reservation_amount":i[2],
                 "qty_customers":i[3],
-                "check_in":i[4].strftime("%Y/%m/%d"),
-                "check_out":i[5].strftime("%Y/%m/%d"),
-                "status":i[6],
-                "first_name":i[7],
-                "last_name":i[8],
-                "email":i[9],
+                "check_in":i[5].strftime("%Y/%m/%d"),
+                "check_out":i[6].strftime("%Y/%m/%d"),
+                "status":i[7],
+                "first_name":i[8],
+                "last_name":i[9],
+                "email":i[10],
                 "department":department_result,
-                "service_extra":service_extra_reservation
+                "service_extra":service_extra_reservation,
+                "reservation_date":i[4].strftime("%Y/%m/%d")
             }
             reservation.append(reservation_json)
 
