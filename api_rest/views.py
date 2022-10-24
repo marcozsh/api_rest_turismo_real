@@ -446,7 +446,7 @@ class ReservationByIdView(View):
                     "short_description":z[2],
                     "long_description":z[3],
                     "department_image":z[6] if z[6] == None else str(base64.b64encode(z[6].read()), 'utf-8'),
-                    "is_new":i[10]
+                    "is_new":z[10]
                 }
                 department_result.append(json_department)
             reservation_json = {
@@ -454,6 +454,7 @@ class ReservationByIdView(View):
                 "total_amount":i[1],
                 "reservation_amount":i[2],
                 "qty_customers":i[3],
+                "reservation_date":i[4].strftime("%Y/%m/%d"),
                 "check_in":i[5].strftime("%Y/%m/%d"),
                 "check_out":i[6].strftime("%Y/%m/%d"),
                 "status":i[7],
@@ -461,8 +462,7 @@ class ReservationByIdView(View):
                 "last_name":i[9],
                 "email":i[10],
                 "department":department_result,
-                "service_extra":service_extra_reservation,
-                "reservation_date":i[4].strftime("%Y/%m/%d")
+                "service_extra":service_extra_reservation
             }
             reservation.append(reservation_json)
 
@@ -504,3 +504,18 @@ class ReservationView(View):
             }
             reservation.append(reservation_json)
         return JsonResponse(reservation, safe=False)
+
+class AddTransactionView(View):
+    def post(self,request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_number = cursor.var(cx_Oracle.NUMBER)
+        print(post_data)
+        cursor.callproc('ADD_TRANSACTION',[post_data['reservation_id'], post_data['amount'],post_data['status'],post_data['transaction_type'],out_number])
+        connection.commit()
+        id_transaction = out_number.getvalue()
+        return JsonResponse({
+            "id_transaction":id_transaction
+        })

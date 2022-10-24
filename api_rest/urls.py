@@ -22,5 +22,6 @@ urlpatterns = [
     path('not_available_dates/', getNotaVailableDates.as_view()),
     path('reservation/id/', ReservationByIdView.as_view()),
     path('reservation/status/', ReservationStatusView.as_view()),
+    path('reservation/payment/', AddTransactionView.as_view()),
     path('reservation/', ReservationView.as_view()),
 ]

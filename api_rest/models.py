@@ -158,7 +158,7 @@ class Reservation(models.Model):
     check_in = models.DateField() 
     check_out = models.DateField()
     status = models.IntegerField(default=0)
-    date = models.DateField(default=date.today)
+    reservation_date = models.DateField(default=date.today)
     class Meta:
         db_table = 'reservation' 
         ordering = ['id'] 
@@ -178,6 +178,7 @@ class Transaction(models.Model):
     amount = models.IntegerField(default=0, null=False)
     status = models.CharField(max_length=2, null= False)
     transaction_date = models.DateField(null=False)
+    transaction_type = models.IntegerField(default=0, null=False)
     class Meta:
         db_table = 'transaction'
         ordering = ['id']
