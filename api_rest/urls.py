@@ -7,6 +7,7 @@ urlpatterns = [
     path('employee_logout/',EmployeeLogoutView.as_view()),
     path('employee_login/', EmployeeLoginView.as_view()),
     path('extra_services/', ExtraServicesView.as_view()),
+    path('extra_service/id/', ExtraServicesByIdView.as_view()),
     path('extra_services/add/', AddExtraServicesView.as_view()),
     path('department/', DepartmentView.as_view()),
     path('department/add/', AddDepartment.as_view()),
@@ -24,4 +25,6 @@ urlpatterns = [
     path('reservation/status/', ReservationStatusView.as_view()),
     path('reservation/payment/', AddTransactionView.as_view()),
     path('reservation/', ReservationView.as_view()),
+    path('reservation/add_extra_service/', AddExtraServiceToReservation.as_view()),
+    path('reservation/extra_service/', ExtraServiceByReservation.as_view()),
 ]

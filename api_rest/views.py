@@ -103,6 +103,51 @@ class ExtraServicesView(View):
     def get(self, request):
         extra_services = Services.objects.all()
         return JsonResponse(list(extra_services.values()), safe=False)
+    
+    
+
+class ExtraServicesByIdView(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        cursor.callproc('GET_SERVICE_BY_ID',[out_cursor, post_data['service_id']])
+        service = []
+        for i in out_cursor:
+            service_json = {
+                "id": i[0],
+                "service_type_id":i[1],
+                "name": i[2],
+                "price": i[3],
+                "location": i[4],
+                "available":True if i[5] == 1 else False
+            }
+            service.append(service_json)
+        
+        return JsonResponse(service, safe=False)
+
+class ExtraServiceByReservation(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode) 
+
+        cursor.callproc('GET_RESERVATION_EXTRA_SERVICE',[out_cursor, post_data['reservation_id']])
+        services = []
+        for i in out_cursor:
+            if (i[0] == 0):
+                continue
+            services_id_json = {
+                "id":i[0]
+            }
+            services.append(services_id_json)
+
+        return JsonResponse(services,safe=False)
+
 
 class AddExtraServicesView(View):
     def post(self, request):
@@ -519,3 +564,45 @@ class AddTransactionView(View):
         return JsonResponse({
             "id_transaction":id_transaction
         })
+
+
+class AddExtraServiceToReservation(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        total_amount = 0
+        cursor.callproc('GET_RESERVATION_BY_ID',[out_cursor, post_data['reservation_id']])
+        for i in out_cursor:
+            total_amount = i[1]
+
+        service_price = 0
+        for z in post_data['services']:
+
+
+            reservation_details_out = cursor.var(cx_Oracle.NUMBER)
+            cursor_reservation_details=django_cursor.connection.cursor()
+            cursor_reservation_details.callproc('ADD_RESERVATION_DETAILS',[z, post_data['reservation_id'], reservation_details_out])
+            cursor_reservation_details.close()
+            if reservation_details_out.getvalue() > 0:
+                cursor2 = django_cursor.connection.cursor()
+                out_cursor2 = django_cursor.connection.cursor()
+                cursor2.callproc('GET_SERVICE_BY_ID',[out_cursor2, z])
+
+                for x in out_cursor2:
+                    service_price+=x[3]
+                cursor2.close()
+                out_cursor2.close()
+
+        total = total_amount + service_price
+        cursor4 = django_cursor.connection.cursor()
+        out_number = cursor.var(cx_Oracle.NUMBER)
+        cursor4.callproc('UPDATE_RESERVATION_TOTAL', [post_data['reservation_id'], total, out_number])
+        return_value = out_number.getvalue()
+
+        return JsonResponse({
+            "response":return_value
+        }) 
+
