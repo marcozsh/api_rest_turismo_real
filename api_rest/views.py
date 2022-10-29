@@ -288,12 +288,35 @@ class ProductView(View):
         json_decode = request.body.decode('utf-8')
         post_data = json.loads(json_decode)
         out_number = cursor.var(cx_Oracle.NUMBER)
-        cursor.callproc('ADD_PRODUCT',[post_data['name'], post_data['brand'], post_data['product_type'], out_number])
+        cursor.callproc('ADD_PRODUCT',[post_data['name'], post_data['brand'], post_data['product_type'],post_data['price'], out_number])
         connection.commit()
         id_product = out_number.getvalue()
         return JsonResponse({
             "response":id_product
         })
+
+
+class ProductViewById(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_cursor = django_cursor.connection.cursor()
+        cursor.callproc('GET_PRODUCT_BY_ID', [out_cursor, post_data['product_id']])
+        json_product = []
+        for i in out_cursor:
+            product = {
+                "id":i[0],
+                "name":i[1],
+                "brand":i[2],
+                "product_type":i[3],
+                "status":i[4]
+            }
+            json_product.append(product)
+
+        return JsonResponse(json_product, safe=False)
+
 
 class ProductViewByCategory(View):
     def post(self, request):
@@ -330,6 +353,22 @@ class ProductTypeView(View):
             product_type.append(product_type_json)
         return JsonResponse(product_type, safe=False)
 
+class ProductStatusView(View):
+    def post(self,request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_number = cursor.var(cx_Oracle.NUMBER)
+        cursor.callproc('UPDATE_PRODUCT_STATUS',[post_data['product_id'], post_data['status'], out_number])
+        connection.commit()
+        product_id = out_number.getvalue()
+        return JsonResponse({
+            "response":product_id
+        })
+
+
+
 class DepartmentInventoryView(View):
     def post(self, request):
         django_cursor = connection.cursor()
@@ -346,7 +385,10 @@ class DepartmentInventoryView(View):
                 "qty":i[2],
                 "name":i[3],
                 "brand":i[4],
-                "product_type":i[5]
+                "product_type":i[5],
+                "product_id":i[6],
+                "status":i[7],
+                "price":i[8]
             }
             json_inventory.append(inventory)
 

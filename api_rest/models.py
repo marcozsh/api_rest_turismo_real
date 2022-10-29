@@ -77,6 +77,8 @@ class Product(models.Model):
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='product_type_fk', default=None)
     name = models.CharField(max_length=100, null=False)
     brand = models.CharField(max_length=100, null=False)
+    status = models.CharField(max_length=100, null=False, default="ok")
+    price = models.IntegerField(default=0, null=False)
     class Meta:
         db_table = 'product'
         ordering = ['id']
