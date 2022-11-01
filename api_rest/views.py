@@ -616,14 +616,13 @@ class AddExtraServiceToReservation(View):
         json_decode = request.body.decode('utf-8')
         post_data = json.loads(json_decode)
         total_amount = 0
+        print(post_data)
         cursor.callproc('GET_RESERVATION_BY_ID',[out_cursor, post_data['reservation_id']])
         for i in out_cursor:
             total_amount = i[1]
 
         service_price = 0
         for z in post_data['services']:
-
-
             reservation_details_out = cursor.var(cx_Oracle.NUMBER)
             cursor_reservation_details=django_cursor.connection.cursor()
             cursor_reservation_details.callproc('ADD_RESERVATION_DETAILS',[z, post_data['reservation_id'], reservation_details_out])
