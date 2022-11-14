@@ -140,6 +140,7 @@ class Services(models.Model):
         ordering = ['id']
 
 
+
 class Finance(models.Model):
     user = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='finance_user_id_fk', default=None)
     income = models.IntegerField(default=0, null=False)
@@ -173,6 +174,15 @@ class ReservationDetails(models.Model):
 
     class Meta:
         db_table = 'reservation_details'
+        ordering = ['id']
+
+
+class ServicesInformation(models.Model):
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, default=None)
+    service = models.ForeignKey(Services, on_delete=models.CASCADE, related_name='service_information_fk', default=None)
+    detail = models.CharField(max_length=250, null=True, default=None)
+    class Meta:
+        db_table = 'service_information'
         ordering = ['id']
 
 class Transaction(models.Model):
