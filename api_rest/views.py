@@ -75,10 +75,6 @@ class EmployeeView(View):
             }
         return JsonResponse(result_data, safe=False)
 
-class EmployeeDetailView(View):
-    def get(self, request, pk):
-        employee = Employee.objects.get(pk=pk)
-        return JsonResponse(model_to_dict(employee))
 
 class EmployeeLogoutView(View):
     def post(self, request):
@@ -647,3 +643,25 @@ class AddExtraServiceToReservation(View):
             "response":return_value
         }) 
 
+
+class UsersView(View):
+    def post(selft, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        cursor.callproc('GET_APP_USERS', [out_cursor, post_data['user_type']])
+        users = []
+        for i in out_cursor:
+            users_json= {
+                "username":i[0],
+                "full_name":i[1],
+                "email":i[2]
+            }
+            users.append(users_json)
+        return JsonResponse(users, safe=False)
+        
+
+
+   #GET_APP_USERS 
