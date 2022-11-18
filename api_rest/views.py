@@ -75,6 +75,28 @@ class EmployeeView(View):
             }
         return JsonResponse(result_data, safe=False)
 
+class ProfileView(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+
+        cursor.callproc('GET_EMPLOYEE_INFORMATION', [post_data["user_id"], out_cursor])
+
+        employee = []
+
+        for i in out_cursor:
+            json_employee = {
+                "rut":i[0],
+                "full_name":i[1],
+                "mail":i[2],
+                "rol":i[3]
+            }
+            employee.append(json_employee)
+        return JsonResponse(employee, safe=False)
+
 
 class EmployeeLogoutView(View):
     def post(self, request):
@@ -100,7 +122,25 @@ class ExtraServicesView(View):
         extra_services = Services.objects.all()
         return JsonResponse(list(extra_services.values()), safe=False)
     
-    
+
+class UpdateExtraServiceView(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        out_number = cursor.var(cx_Oracle.NUMBER)
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        print(post_data)
+        cursor.callproc('UPDATE_EXTRA_SERVICE', [post_data['id'], post_data['location'], post_data['status'], post_data['price'], out_number])
+
+        connection.commit()
+        id_service = out_number.getvalue()
+
+        return JsonResponse({
+            "response":id_service
+        })
+
+
 
 class ExtraServicesByIdView(View):
     def post(self, request):
@@ -651,6 +691,7 @@ class UsersView(View):
         out_cursor = django_cursor.connection.cursor()
         json_decode = request.body.decode('utf-8')
         post_data = json.loads(json_decode)
+        print(post_data)
         cursor.callproc('GET_APP_USERS', [out_cursor, post_data['user_type']])
         users = []
         for i in out_cursor:
@@ -661,7 +702,3 @@ class UsersView(View):
             }
             users.append(users_json)
         return JsonResponse(users, safe=False)
-        
-
-
-   #GET_APP_USERS 
