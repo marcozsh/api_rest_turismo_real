@@ -65,7 +65,6 @@ class EmployeeView(View):
                     session_id = i[3]
             except:
                 error = "ERROR"
-
             result_data = {
                 "user_id":user_id,
                 "full_name":full_name,
@@ -96,6 +95,40 @@ class ProfileView(View):
             }
             employee.append(json_employee)
         return JsonResponse(employee, safe=False)
+
+
+class AddEmployeeView(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_number = cursor.var(cx_Oracle.NUMBER)
+
+        cursor.callproc('ADD_EMPLOYEE', [post_data['rut'], post_data['name'], post_data['last_name'], post_data['email'],post_data['user_role'], out_number])
+        connection.commit();
+        user_id = out_number.getvalue()
+        
+        return JsonResponse({
+            "response":user_id
+        })
+
+class ChangeEmployeePasswordView(View):
+    def post(self, request):
+        django_cursor = connection.cursor()
+        cursor = django_cursor.connection.cursor()
+        json_decode = request.body.decode('utf-8')
+        post_data = json.loads(json_decode)
+        out_number = cursor.var(cx_Oracle.NUMBER)
+
+        cursor.callproc('CHANGE_PASSWORD', [post_data['user_id'], post_data['new_password'], out_number])
+        connection.commit();
+        user_id = out_number.getvalue()
+        
+        return JsonResponse({
+            "response":user_id
+        })
+
 
 
 class EmployeeLogoutView(View):
